@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Document OCR | Auto-Fill Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #a5b4fc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --radius: 12px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.03);
+            --shadow-xl: 0 20px 50px -12px rgba(0,0,0,0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .app-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.4rem;
+        }
+        .header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        /* Main card */
+        .main-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        /* Two-column layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 500px;
+        }
+        @media (max-width: 768px) {
+            .layout { grid-template-columns: 1fr; }
+        }
+
+        /* Left panel - Upload */
+        .upload-panel {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--gray-100);
+        }
+        .panel-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray-400);
+            margin-bottom: 1.5rem;
+        }
+
+        .drop-zone {
+            flex: 1;
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: var(--gray-50);
+        }
+        .drop-zone:hover { border-color: var(--primary-light); background: #f5f3ff; }
+        .drop-zone.dragover { border-color: var(--primary); background: #ede9fe; transform: scale(1.01); }
+        .drop-zone.has-file { border-color: var(--success); border-style: solid; background: #ecfdf5; }
+        .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+        .drop-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            color: var(--gray-400);
+        }
+        .drop-zone.has-file .drop-icon { color: var(--success); }
+
+        .drop-text { font-size: 0.95rem; color: var(--gray-600); font-weight: 500; text-align: center; }
+        .drop-hint { font-size: 0.8rem; color: var(--gray-400); margin-top: 0.3rem; }
+
+        /* Preview */
+        .preview-area {
+            margin-top: 1.25rem;
+            display: none;
+            position: relative;
+        }
+        .preview-area.active { display: block; }
+        .preview-area img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: var(--gray-100);
+        }
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+        }
+        .file-name { font-size: 0.8rem; color: var(--gray-500); font-weight: 500; }
+        .clear-btn {
+            font-size: 0.75rem;
+            color: var(--danger);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .clear-btn:hover { text-decoration: underline; }
+
+        .extract-btn {
+            margin-top: 1.25rem;
+            width: 100%;
+            padding: 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .extract-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
+        .extract-btn:active { transform: translateY(0); }
+        .extract-btn:disabled { background: var(--gray-300); box-shadow: none; cursor: not-allowed; transform: none; }
+
+        /* Right panel - Results */
+        .results-panel {
+            padding: 2.5rem;
+            background: var(--gray-50);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-placeholder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-400);
+            text-align: center;
+        }
+        .results-placeholder svg { width: 64px; height: 64px; margin-bottom: 1rem; opacity: 0.5; }
+        .results-placeholder p { font-size: 0.9rem; }
+
+        /* Loading */
+        .loading-state {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .loading-state.active { display: flex; }
+        .loader {
+            width: 44px;
+            height: 44px;
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-state p { color: var(--gray-500); font-size: 0.9rem; }
+
+        /* Results display */
+        .results-content { display: none; flex-direction: column; flex: 1; }
+        .results-content.active { display: flex; }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .results-header h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        .doc-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            color: #fff;
+        }
+        .doc-badge.pan { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .doc-badge.aadhaar { background: linear-gradient(135deg, #10b981, #059669); }
+        .doc-badge.unknown { background: var(--gray-400); }
+
+        .timing-badge {
+            font-size: 0.7rem;
+            color: var(--gray-500);
+            background: var(--gray-100);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        /* Field items */
+        .fields-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .field-item {
+            background: #fff;
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-100);
+            transition: all 0.2s;
+        }
+        .field-item:hover { box-shadow: var(--shadow); }
+        .field-item.review { border-left: 3px solid var(--danger); }
+        .field-item.ok { border-left: 3px solid var(--success); }
+
+        .field-left { flex: 1; }
+        .field-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-400);
+            font-weight: 600;
+            margin-bottom: 0.15rem;
+        }
+        .field-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        .field-value.empty { color: var(--gray-300); font-weight: 400; font-style: italic; }
+
+        .field-right { text-align: right; margin-left: 1rem; }
+        .conf-score {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--success);
+        }
+        .conf-score.low { color: var(--warning); }
+        .conf-score.bad { color: var(--danger); }
+        .review-tag {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--danger);
+            background: #fef2f2;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            margin-top: 0.2rem;
+            display: inline-block;
+        }
+
+        /* JSON drawer */
+        .json-section {
+            margin-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+            padding-top: 0.75rem;
+        }
+        .json-toggle-btn {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--gray-500);
+            background: none;
+            border: 1px solid var(--gray-200);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .json-toggle-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+        .json-output {
+            margin-top: 0.6rem;
+            background: var(--gray-900);
+            color: #a5f3fc;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.72rem;
+            padding: 1rem;
+            border-radius: 8px;
+            max-height: 250px;
+            overflow: auto;
+            white-space: pre-wrap;
+            display: none;
+            line-height: 1.5;
+        }
+        .json-output.active { display: block; }
+
+        /* Error */
+        .error-toast {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: #fff;
+            border: 1px solid #fecaca;
+            border-left: 4px solid var(--danger);
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+            font-size: 0.85rem;
+            color: var(--gray-700);
+            z-index: 1000;
+            max-width: 350px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        .error-toast.active { display: block; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>KYC Document OCR</h1>
+            <p>Intelligent field extraction for Indian PAN and Aadhaar cards</p>
+        </div>
+
+        <div class="main-card">
+            <div class="layout">
+                <!-- Left: Upload -->
+                <div class="upload-panel">
+                    <div class="panel-title">Upload Document</div>
+
+                    <div class="drop-zone" id="dropZone">
+                        <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <p class="drop-text">Drag and drop your card image here</p>
+                        <p class="drop-hint">or click to browse (JPEG, PNG)</p>
+                        <input type="file" id="fileInput" accept="image/jpeg,image/png">
+                    </div>
+
+                    <div class="preview-area" id="previewArea">
+                        <img id="previewImg" alt="Preview">
+                        <div class="file-info">
+                            <span class="file-name" id="fileName"></span>
+                            <button class="clear-btn" id="clearBtn">Remove</button>
+                        </div>
+                    </div>
+
+                    <button class="extract-btn" id="extractBtn" disabled>Extract Fields</button>
+                </div>
+
+                <!-- Right: Results -->
+                <div class="results-panel">
+                    <div class="panel-title">Extraction Results</div>
+
+                    <div class="results-placeholder" id="placeholder">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                            <path d="M7 8h4M7 12h10M7 16h6"/>
+                        </svg>
+                        <p>Upload a document to see<br>extracted fields here</p>
+                    </div>
+
+                    <div class="loading-state" id="loadingState">
+                        <div class="loader"></div>
+                        <p>Analyzing document...</p>
+                    </div>
+
+                    <div class="results-content" id="resultsContent">
+                        <div class="results-header">
+                            <h3>Detected Fields</h3>
+                            <span class="doc-badge" id="docBadge"></span>
+                        </div>
+                        <span class="timing-badge" id="timingBadge"></span>
+                        <div class="fields-list" id="fieldsList"></div>
+                        <div class="json-section">
+                            <button class="json-toggle-btn" id="jsonToggle">View JSON Response</button>
+                            <pre class="json-output" id="jsonOutput"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            On-premises OCR pipeline &middot; No data leaves your network &middot; PaddleOCR v3.7 engine
+        </div>
+    </div>
+
+    <div class="error-toast" id="errorToast"></div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const previewArea = document.getElementById('previewArea');
+        const previewImg = document.getElementById('previewImg');
+        const fileName = document.getElementById('fileName');
+        const clearBtn = document.getElementById('clearBtn');
+        const extractBtn = document.getElementById('extractBtn');
+        const placeholder = document.getElementById('placeholder');
+        const loadingState = document.getElementById('loadingState');
+        const resultsContent = document.getElementById('resultsContent');
+        const fieldsList = document.getElementById('fieldsList');
+        const docBadge = document.getElementById('docBadge');
+        const timingBadge = document.getElementById('timingBadge');
+        const jsonToggle = document.getElementById('jsonToggle');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const errorToast = document.getElementById('errorToast');
+
+        let selectedFile = null;
+
+        // Drag & drop
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+        clearBtn.addEventListener('click', () => {
+            selectedFile = null;
+            previewArea.classList.remove('active');
+            dropZone.classList.remove('has-file');
+            dropZone.style.display = '';
+            extractBtn.disabled = true;
+            fileInput.value = '';
+        });
+
+        function handleFile(file) {
+            if (!file.type.match(/^image\/(jpeg|png)$/)) { showError('Please select a JPEG or PNG image.'); return; }
+            if (file.size > 10 * 1024 * 1024) { showError('File exceeds 10 MB limit.'); return; }
+
+            selectedFile = file;
+            dropZone.classList.add('has-file');
+            dropZone.style.display = 'none';
+            previewArea.classList.add('active');
+            fileName.textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = e => previewImg.src = e.target.result;
+            reader.readAsDataURL(file);
+
+            extractBtn.disabled = false;
+            hideResults();
+        }
+
+        // Extract
+        extractBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            extractBtn.disabled = true;
+            showLoading();
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const resp = await fetch('/extract', { method: 'POST', body: formData });
+                const data = await resp.json();
+                if (!resp.ok) { showError(data.detail || 'Extraction failed'); return; }
+                displayResults(data);
+            } catch (err) {
+                showError('Connection error: ' + err.message);
+            } finally {
+                extractBtn.disabled = false;
+                loadingState.classList.remove('active');
+            }
+        });
+
+        function displayResults(data) {
+            placeholder.style.display = 'none';
+            loadingState.classList.remove('active');
+            resultsContent.classList.add('active');
+
+            const docType = data.documentType || 'UNKNOWN';
+            docBadge.textContent = docType;
+            docBadge.className = 'doc-badge ' + docType.toLowerCase();
+            timingBadge.textContent = `Processed in ${data.processingTimeMs.toFixed(0)} ms`;
+
+            const labels = {
+                name: 'Full Name', fatherName: "Father's Name", guardianName: 'Guardian Name',
+                dob: 'Date of Birth', panNumber: 'PAN Number', aadhaarNumber: 'Aadhaar Number', gender: 'Gender'
+            };
+
+            fieldsList.innerHTML = '';
+            for (const [key, field] of Object.entries(data.fields || {})) {
+                const item = document.createElement('div');
+                item.className = 'field-item ' + (field.requiresReview ? 'review' : 'ok');
+                const conf = (field.confidence * 100).toFixed(1);
+                const confClass = conf >= 95 ? '' : conf >= 85 ? 'low' : 'bad';
+                item.innerHTML = `
+                    <div class="field-left">
+                        <div class="field-label">${labels[key] || key}</div>
+                        <div class="field-value ${field.value ? '' : 'empty'}">${field.value || 'Not detected'}</div>
+                    </div>
+                    <div class="field-right">
+                        <div class="conf-score ${confClass}">${conf}%</div>
+                        ${field.requiresReview ? '<div class="review-tag">REVIEW</div>' : ''}
+                    </div>
+                `;
+                fieldsList.appendChild(item);
+            }
+
+            jsonOutput.textContent = JSON.stringify(data, null, 2);
+            jsonOutput.classList.remove('active');
+        }
+
+        jsonToggle.addEventListener('click', () => {
+            const active = jsonOutput.classList.toggle('active');
+            jsonToggle.textContent = active ? 'Hide JSON' : 'View JSON Response';
+        });
+
+        function showLoading() {
+            placeholder.style.display = 'none';
+            resultsContent.classList.remove('active');
+            loadingState.classList.add('active');
+        }
+
+        function hideResults() {
+            resultsContent.classList.remove('active');
+            loadingState.classList.remove('active');
+            placeholder.style.display = '';
+        }
+
+        function showError(msg) {
+            errorToast.textContent = msg;
+            errorToast.classList.add('active');
+            setTimeout(() => errorToast.classList.remove('active'), 4000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+.DS_Store
+.amazonq/**
+.claude/**
+!.claude/settings.json
+.codebuild/**
+.worktrees/**
+.vscode/**
+.env
+buildspec.yml
+codebuild_build.sh
+
+# Project artifacts
+models/
+data/
+*.pyc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+*.egg-info/
+dist/
+build/
+.venv/

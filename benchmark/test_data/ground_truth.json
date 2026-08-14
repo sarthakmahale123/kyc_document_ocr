@@ -1,0 +1,44 @@
+[
+  {
+    "filename": "sample_pan_01.png",
+    "documentType": "PAN",
+    "fields": {
+      "name": "RAJESH KUMAR SHARMA",
+      "fatherName": "SURESH KUMAR SHARMA",
+      "dob": "15/06/1985",
+      "panNumber": "ABCPS1234K"
+    }
+  },
+  {
+    "filename": "sample_pan_02.png",
+    "documentType": "PAN",
+    "fields": {
+      "name": "PRIYA GUPTA",
+      "fatherName": "ANIL GUPTA",
+      "dob": "22/03/1992",
+      "panNumber": "BRGPG5678L"
+    }
+  },
+  {
+    "filename": "sample_aadhaar_01.png",
+    "documentType": "AADHAAR",
+    "fields": {
+      "name": "AMIT KUMAR VERMA",
+      "guardianName": "RAMESH VERMA",
+      "dob": "10/11/1988",
+      "gender": "MALE",
+      "aadhaarNumber": "234567891234"
+    }
+  },
+  {
+    "filename": "sample_aadhaar_02.png",
+    "documentType": "AADHAAR",
+    "fields": {
+      "name": "SUNITA DEVI",
+      "guardianName": "MANOJ SINGH",
+      "dob": "1975",
+      "gender": "FEMALE",
+      "aadhaarNumber": "987654321012"
+    }
+  }
+]
